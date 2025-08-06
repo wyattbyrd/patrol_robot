@@ -91,7 +91,7 @@
   </joint>
 
   <!-- 激光雷达 -->
-  <link name="laser">
+  <link name="laser_link">
     <visual>
       <geometry>
         <cylinder radius="0.05" length="0.04"/>
@@ -107,14 +107,15 @@
     </collision>
     <inertial>
       <mass value="0.1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
   </link>
 
   <joint name="laser_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="laser"/>
-    <origin xyz="0 0 ${base_height/2+0.05}" rpy="0 0 0"/>
+    <child link="laser_link"/>
+    <origin xyz="0.15 0 ${base_height/2+0.05}" rpy="0 0 0"/>
   </joint>
 
   <!-- Gazebo插件：差速驱动控制器 -->
@@ -139,24 +140,24 @@
     </plugin>
   </gazebo>
 
-  <!-- Gazebo插件：激光雷达 -->
-  <gazebo reference="laser">
-    <sensor type="ray" name="head_hokuyo_sensor">
+  <!-- Gazebo激光雷达插件 -->
+  <gazebo reference="laser_link">
+    <sensor type="ray" name="laser_sensor">
       <pose>0 0 0 0 0 0</pose>
       <visualize>true</visualize>
-      <update_rate>40</update_rate>
+      <update_rate>10</update_rate>
       <ray>
         <scan>
           <horizontal>
-            <samples>720</samples>
+            <samples>360</samples>
             <resolution>1</resolution>
-            <min_angle>-1.570796</min_angle>
-            <max_angle>1.570796</max_angle>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
           </horizontal>
         </scan>
         <range>
-          <min>0.10</min>
-          <max>30.0</max>
+          <min>0.20</min>
+          <max>10.0</max>
           <resolution>0.01</resolution>
         </range>
         <noise>
@@ -165,14 +166,12 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_ray_sensor.so">
+      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_ray_sensor.so">
         <ros>
-          <namespace>/</namespace>
           <remapping>~/out:=scan</remapping>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>laser_link</frame_name>
       </plugin>
     </sensor>
   </gazebo>
-
-</robot>

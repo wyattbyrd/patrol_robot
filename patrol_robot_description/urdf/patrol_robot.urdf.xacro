@@ -173,5 +173,6 @@
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>laser_link</frame_name>
       </plugin>
-    </sensor>
   </gazebo>
+
+</robot>

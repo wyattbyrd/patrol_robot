@@ -16,7 +16,8 @@ def generate_launch_description():
     # 配置文件路径
     nav2_params_file = os.path.join(pkg_path, 'config', 'nav2', 'nav2_params.yaml')
     amcl_config_file = os.path.join(pkg_path, 'config', 'nav2', 'amcl_config.yaml')
-    map_file = os.path.join(pkg_path, 'maps', 'patrol_map.yaml')
+    map_file = os.path.join(pkg_path, 'maps', 'my_first_map.yaml')
+    world_file = os.path.join(pkg_path, 'worlds', 'maze_world.world')
     
     # URDF文件路径
     xacro_file = os.path.join(pkg_path, 'urdf', 'patrol_robot.urdf.xacro')
@@ -34,7 +35,8 @@ def generate_launch_description():
             'gzserver', 
             '--verbose',
             '-s', 'libgazebo_ros_init.so', 
-            '-s', 'libgazebo_ros_factory.so'
+            '-s', 'libgazebo_ros_factory.so',
+            world_file
         ],
         output='screen',
         additional_env=gazebo_env
@@ -69,7 +71,10 @@ def generate_launch_description():
                     '-entity', 'patrol_robot',
                     '-x', '0',
                     '-y', '0', 
-                    '-z', '0.1'
+                    '-z', '0.1',
+                    '-R', '0',      # 设置初始朝向
+                    '-P', '0',
+                    '-Y', '0'
                 ],
                 output='screen'
             )
@@ -88,15 +93,38 @@ def generate_launch_description():
         }]
     )
 
-    # AMCL定位
+    # AMCL定位 - 优化参数
     amcl = Node(
         package='nav2_amcl',
         executable='amcl',
         name='amcl',
         output='screen',
-        parameters=[amcl_config_file]
+        parameters=[{
+            'use_sim_time': True,
+            'base_frame_id': 'base_link',
+            'global_frame_id': 'map',
+            'odom_frame_id': 'odom',
+            'scan_topic': 'scan',
+            'robot_model_type': 'nav2_amcl::DifferentialMotionModel',
+            # 增加粒子数量，提高定位精度
+            'max_particles': 3000,
+            'min_particles': 1000,
+            # 设置合理的初始位置不确定性
+            'initial_pose': {
+                'x': 0.0,
+                'y': 0.0,
+                'z': 0.0,
+                'yaw': 0.0
+            },
+            'set_initial_pose': True,  # 设置初始位置
+            # 提高定位稳定性
+            'update_min_d': 0.1,      # 移动0.1m后更新
+            'update_min_a': 0.1,      # 旋转0.1rad后更新
+            'transform_tolerance': 0.5,
+            'recovery_alpha_fast': 0.1,
+            'recovery_alpha_slow': 0.001
+        }]
     )
-
     # Navigation2 Stack
     nav2_bringup = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([

@@ -5,11 +5,10 @@
   <xacro:property name="base_width" value="0.31"/>
   <xacro:property name="base_length" value="0.42"/>
   <xacro:property name="base_height" value="0.18"/>
-  <xacro:property name="wheel_radius" value="0.10"/>
+  <xacro:property name="wheel_radius" value="0.08"/>
   <xacro:property name="wheel_width" value="0.04"/>
-  <xacro:property name="wheel_ygap" value="0.025"/>
-  <xacro:property name="wheel_zoff" value="0.05"/>
-  <xacro:property name="wheel_xoff" value="0.12"/>
+  <xacro:property name="wheel_ygap" value="0.02"/>
+  <xacro:property name="wheel_xgap" value="0.15"/>  <!-- 前后轮距离 -->
 
   <!-- 机器人底盘 -->
   <link name="base_link">
@@ -27,13 +26,18 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="20"/>
+      <!-- 重心在底盘中心稍微偏下 -->
+      <origin xyz="0 0 ${-base_height/4}" rpy="0 0 0"/>
+      <inertia ixx="${20 * (base_width*base_width + base_height*base_height) / 12.0}" 
+               iyy="${20 * (base_length*base_length + base_height*base_height) / 12.0}" 
+               izz="${20 * (base_length*base_length + base_width*base_width) / 12.0}"
+               ixy="0.0" ixz="0.0" iyz="0.0"/>
     </inertial>
   </link>
 
-  <!-- 左轮 -->
-  <link name="left_wheel">
+  <!-- 前左轮 -->
+  <link name="front_left_wheel">
     <visual>
       <geometry>
         <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
@@ -48,13 +52,14 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
     </inertial>
   </link>
 
-  <!-- 右轮 -->
-  <link name="right_wheel">
+  <!-- 前右轮 -->
+  <link name="front_right_wheel">
     <visual>
       <geometry>
         <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
@@ -69,24 +74,85 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
     </inertial>
   </link>
 
-  <!-- 底盘与左轮连接 -->
-  <joint name="left_wheel_joint" type="continuous">
+  <!-- 后左轮 -->
+  <link name="rear_left_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- 后右轮 -->
+  <link name="rear_right_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- 前左轮关节 -->
+  <joint name="front_left_wheel_joint" type="continuous">
     <parent link="base_link"/>
-    <child link="left_wheel"/>
-    <origin xyz="0 ${base_width/2+wheel_ygap} ${-wheel_zoff}" rpy="-1.5708 0 0"/>
+    <child link="front_left_wheel"/>
+    <origin xyz="${wheel_xgap} ${base_width/2+wheel_ygap} ${-base_height/2-wheel_radius+0.02}" rpy="-1.5708 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
-  <!-- 底盘与右轮连接 -->
-  <joint name="right_wheel_joint" type="continuous">
+  <!-- 前右轮关节 -->
+  <joint name="front_right_wheel_joint" type="continuous">
     <parent link="base_link"/>
-    <child link="right_wheel"/>
-    <origin xyz="0 ${-base_width/2-wheel_ygap} ${-wheel_zoff}" rpy="-1.5708 0 0"/>
+    <child link="front_right_wheel"/>
+    <origin xyz="${wheel_xgap} ${-base_width/2-wheel_ygap} ${-base_height/2-wheel_radius+0.02}" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- 后左轮关节 -->
+  <joint name="rear_left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_left_wheel"/>
+    <origin xyz="${-wheel_xgap} ${base_width/2+wheel_ygap} ${-base_height/2-wheel_radius+0.02}" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- 后右轮关节 -->
+  <joint name="rear_right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_right_wheel"/>
+    <origin xyz="${-wheel_xgap} ${-base_width/2-wheel_ygap} ${-base_height/2-wheel_radius+0.02}" rpy="-1.5708 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -115,21 +181,27 @@
   <joint name="laser_joint" type="fixed">
     <parent link="base_link"/>
     <child link="laser_link"/>
-    <origin xyz="0.15 0 ${base_height/2+0.05}" rpy="0 0 0"/>
+    <origin xyz="0 0 ${base_height/2+0.05}" rpy="0 0 0"/>
   </joint>
 
-  <!-- Gazebo插件：差速驱动控制器 -->
+<!-- Gazebo插件：兼容的四轮驱动控制器 -->
   <gazebo>
     <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
       <ros>
         <namespace>/</namespace>
       </ros>
-      <left_joint>left_wheel_joint</left_joint>
-      <right_joint>right_wheel_joint</right_joint>
-      <wheel_separation>0.4</wheel_separation>
-      <wheel_diameter>0.2</wheel_diameter>
-      <max_wheel_torque>200</max_wheel_torque>
-      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+      
+      <!-- 使用前轮作为主驱动轮 -->
+      <left_joint>front_left_wheel_joint</left_joint>
+      <right_joint>front_right_wheel_joint</right_joint>
+      
+      <!-- 物理参数 -->
+      <wheel_separation>0.35</wheel_separation>
+      <wheel_diameter>${2*wheel_radius}</wheel_diameter>
+      <max_wheel_torque>30</max_wheel_torque>
+      <max_wheel_acceleration>3.0</max_wheel_acceleration>
+      
+      <!-- ROS话题 -->
       <command_topic>cmd_vel</command_topic>
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
@@ -137,28 +209,44 @@
       <odometry_topic>odom</odometry_topic>
       <odometry_frame>odom</odometry_frame>
       <robot_base_frame>base_link</robot_base_frame>
+      
+      <!-- 更新频率降低，减少计算负担 -->
+      <update_rate>20.0</update_rate>
     </plugin>
   </gazebo>
 
-  <!-- Gazebo激光雷达插件 -->
+  <!-- 后轮被动跟随（增加摩擦阻尼） -->
+  <gazebo reference="rear_left_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+  </gazebo>
+
+  <gazebo reference="rear_right_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>0.8</mu1>
+    <mu2>0.8</mu2>
+  </gazebo>
+
+<!-- Gazebo激光雷达插件 - 优化版 -->
   <gazebo reference="laser_link">
     <sensor type="ray" name="laser_sensor">
       <pose>0 0 0 0 0 0</pose>
       <visualize>true</visualize>
-      <update_rate>10</update_rate>
+      <update_rate>5</update_rate>  <!-- 降低频率 10→5 -->
       <ray>
         <scan>
           <horizontal>
-            <samples>360</samples>
+            <samples>180</samples>  <!-- 降低采样点 360→180 -->
             <resolution>1</resolution>
-            <min_angle>-3.14159</min_angle>
-            <max_angle>3.14159</max_angle>
+            <min_angle>-1.5708</min_angle>  <!-- 180度扫描 -->
+            <max_angle>1.5708</max_angle>
           </horizontal>
         </scan>
         <range>
           <min>0.20</min>
-          <max>10.0</max>
-          <resolution>0.01</resolution>
+          <max>8.0</max>  <!-- 减少扫描距离 10→8 -->
+          <resolution>0.02</resolution>  <!-- 降低分辨率 0.01→0.02 -->
         </range>
         <noise>
           <type>gaussian</type>
@@ -173,6 +261,40 @@
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>laser_link</frame_name>
       </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Gazebo材质定义 -->
+  <gazebo reference="base_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <gazebo reference="front_left_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <gazebo reference="front_right_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <gazebo reference="rear_left_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <gazebo reference="rear_right_wheel">
+    <material>Gazebo/Black</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+
+  <gazebo reference="laser_link">
+    <material>Gazebo/Red</material>
   </gazebo>
 
 </robot>
